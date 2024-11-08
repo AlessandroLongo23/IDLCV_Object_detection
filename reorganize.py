@@ -50,3 +50,20 @@ def split_in_folders():
     for folder in [split.split('.')[0] for split in splits['test']]:
         folder_path = os.path.join(source_folder, folder)
         shutil.move(folder_path, os.path.join(test_folder))
+        
+def delete_data_json():
+    for folder in os.listdir('./Potholes/annotated-images/test'):
+        if os.path.exists(f'./Potholes/annotated-images/test/{folder}/data.json'):
+            os.remove(f'./Potholes/annotated-images/test/{folder}/data.json')
+            
+def delete_proposals_folder():
+    for folder in os.listdir('./Potholes/annotated-images/train'):
+        if os.path.exists(f'./Potholes/annotated-images/train/{folder}/proposals'):
+            shutil.rmtree(f'./Potholes/annotated-images/train/{folder}/proposals')
+            
+def rename_data_to_ground_truth():
+    for split in ['train', 'test']:
+        for folder in os.listdir(f'./Potholes/annotated-images/{split}'):
+            os.rename(f'./Potholes/annotated-images/{split}/{folder}/data.xml', f'./Potholes/annotated-images/{split}/{folder}/ground_truth.xml')
+            
+rename_data_to_ground_truth()
