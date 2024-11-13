@@ -4,8 +4,8 @@ from Models.Model import Model
 from utils.globalConst import *
 
 class CNN(Model):
-    def __init__(self, device, num_classes):
-        super().__init__(device)
+    def __init__(self, device, num_classes, train_loader, val_loader, test_loader):
+        super().__init__(device, train_loader, val_loader, test_loader)
         
         self.conv1 = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3, padding=1),

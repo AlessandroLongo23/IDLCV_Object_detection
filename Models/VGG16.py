@@ -4,8 +4,8 @@ import torchvision.models as models
 from Models.Model import Model
 
 class VGG16(Model):
-    def __init__(self, device, num_classes, pretrained=True, freeze_features=True):
-        super().__init__(device)
+    def __init__(self, device, num_classes, train_loader, val_loader, test_loader, pretrained=True, freeze_features=True):
+        super().__init__(device, train_loader, val_loader, test_loader)
         
         self.model = models.vgg16(pretrained=pretrained)
         

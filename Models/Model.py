@@ -5,11 +5,14 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 class Model(nn.Module):
-    def __init__(self, device):
+    def __init__(self, device, train_loader, val_loader, test_loader):
         super(Model, self).__init__()
         self.device = device
+        self.train_loader = train_loader
+        self.val_loader = val_loader
+        self.test_loader = test_loader
     
-    def train_(self, train_loader, val_loader, num_epochs, criterion, optimizer):
+    def train_(self, num_epochs, criterion, optimizer):
         self.to(self.device)
         self.history = {'train_loss': [], 'train_acc': [], 'val_loss': [], 'val_acc': []}
         
@@ -19,8 +22,8 @@ class Model(nn.Module):
             total_correct = 0.0
             total_samples = 0.0
 
-            with tqdm(total=len(train_loader), desc=f'Epoch {epoch+1}/{num_epochs}', unit='batch') as pbar:
-                for images, labels in train_loader:
+            with tqdm(total=len(self.train_loader), desc=f'Epoch {epoch+1}/{num_epochs}', unit='batch') as pbar:
+                for images, labels in self.train_loader:
                     images = images.to(self.device)
                     labels = labels.to(self.device)
 
@@ -46,7 +49,7 @@ class Model(nn.Module):
             self.history['train_acc'].append(epoch_acc)
 
             # Validation
-            val_loss, val_acc = self.eval_(val_loader, criterion)
+            val_loss, val_acc = self.eval_(criterion)
             self.history['val_loss'].append(val_loss)
             self.history['val_acc'].append(val_acc)
 
@@ -56,14 +59,14 @@ class Model(nn.Module):
                 f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}\n'
             )
         
-    def eval_(self, data_loader, criterion):
+    def eval_(self, criterion):
         self.eval()
         running_loss = 0.0
         total_correct = 0.0
         total_samples = 0.0
 
         with torch.no_grad():
-            for images, labels in data_loader:
+            for images, labels in self.test_loader:
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
@@ -105,14 +108,14 @@ class Model(nn.Module):
         plt.tight_layout()
         plt.show()
         
-    def plot_confusion_matrix(self, data_loader, label_encoder, device):
+    def plot_confusion_matrix(self, label_encoder):
         self.eval()
         all_preds = []
         all_labels = []
         with torch.no_grad():
-            for images, labels in data_loader:
-                images = images.to(device)
-                labels = labels.to(device)
+            for images, labels in self.test_loader:
+                images = images.to(self.device)
+                labels = labels.to(self.device)
 
                 outputs = self(images)
                 _, predicted = torch.max(outputs.data, 1)

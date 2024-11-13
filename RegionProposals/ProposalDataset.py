@@ -4,6 +4,8 @@ from torch.utils.data import Dataset
 import torch
 from PIL import Image
 import os
+from collections import Counter
+from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from utils.globalConst import *
 
@@ -45,3 +47,21 @@ class ProposalDataset(Dataset):
         label_encoded = torch.tensor(label_encoded, dtype=torch.long)
 
         return cropped_img, label_encoded
+    
+    def compute_class_weights(self, num_classes):
+        labels = [sample['label'] for sample in self.samples]
+        label_counts = Counter(labels)
+        total_samples = len(labels)
+        class_weights = []
+
+        for label in self.label_encoder.classes_:
+            count = label_counts.get(label, 0)
+            weight = total_samples / (num_classes * count) if count > 0 else 0
+            class_weights.append(weight)
+
+        self.class_weights = torch.tensor(class_weights, dtype=torch.float)
+        
+    def create_sampler(self):
+        labels = [self.label_encoder.transform([sample['label']])[0] for sample in self.samples]
+        sample_weights = [self.class_weights[label] for label in labels]
+        self.sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
